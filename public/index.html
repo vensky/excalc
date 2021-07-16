@@ -23,35 +23,35 @@
                                     <v-card-text>
                                         <v-form>
                                             <v-text-field
-                                                id="amount"
                                                 label="Сумма, руб"
-                                                name="amount"
-                                                type="text"
+                                                placeholder=0
+                                                type="number"
                                                 v-model="amount"
-                                                @input="calculateAmountCurrancy">
+                                                @input="calculateAmountCurrency"
+                                            >
                                             </v-text-field>
                                             <v-select
-                                                id="currency"
                                                 label="Валюта для конвертации"
-                                                name="currency"
-                                                :items="items"
-                                                readonly
-                                                >
+                                                v-model="currency"
+                                                :items="currencies"
+                                                item-text="currency"
+                                                return-object
+                                                @input="selectCurrency"
+                                            >
                                             </v-select>
                                             <v-text-field
-                                                id="amountCurrancy"
                                                 label="Сумма в валюте"
-                                                name="amountCurrancy"
+                                                placeholder=0
                                                 type="text"
-                                                :value="calculateAmountCurrancy()"
-                                                >
+                                                readonly
+                                                :value="calculateAmountCurrency()"
+                                            >
                                             </v-text-field>
                                             <v-text-field
-                                                id="email"
-                                                label="E-mail"
                                                 name="email"
-                                                type="text">
-
+                                                label="E-mail"
+                                                type="text"
+                                            >
                                             </v-text-field>
                                         </v-form>
                                     </v-card-text>
@@ -72,10 +72,9 @@
         el: '#app',
         vuetify: new Vuetify(),
         data: () => ({
-            amount: '',
-            rate: 2,
-            amountCurrancy: '2',
-            items: [
+            amount: null,
+            currency: null,
+            currencies: [
                 {
                     'currency': 'Доллар США',
                     'rate': 0.013479911
@@ -92,11 +91,21 @@
                     'currency': 'Японская иена',
                     'rate': 1.4849124
                 },
-            ],
+            ]
         }),
+        computed: {
+            selectedCurrency: {
+                get: function() { return this.currencies[0] },
+                set: function() {}
+        },
         methods: {
-            calculateAmountCurrancy() {
-                return this.amount ? parseFloat(this.amount) * parseFloat(this.items[0]['rate']) : ''
+            selectCurrency() {
+                console.log(this.selectedCurrency.currency)
+                this.selectedCurrency = this.currency
+            },
+
+            calculateAmountCurrency() {
+                return this.amount ? parseFloat(this.amount) * parseFloat(this.selectedCurrency.rate) : null
             }
         }
     })

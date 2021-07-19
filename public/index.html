@@ -1,139 +1,16 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="ru">
 <head>
+    <meta charset="utf-8">
     <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900|Material+Icons" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/vuetify/dist/vuetify.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/@mdi/font@5.x/css/materialdesignicons.min.css" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+    <title>Калькулятор конвертации валюты</title>
 </head>
 
 <body>
-    <div id="app">
-            <v-app id="excalc">
-                <v-main>
-                    <v-container class="fill-height" fluid>
-                        <v-row align="center" justify="center">
-                            <v-col cols="12" sm="8" md="4">
-                                <v-card class="elevation-12 pb-6">
-                                    <v-toolbar color="grey lighten-3" dark flat>
-                                        <v-toolbar-title class="toolbar__title">Калькулятор конвертации валюты</v-toolbar-title>
-                                        <v-spacer></v-spacer>
-                                    </v-toolbar>
-                                    <v-card-text>
-                                        <v-form>
-                                            <v-text-field
-                                                label="Сумма, руб"
-                                                placeholder=0
-                                                type="text"
-                                                inputmode="numeric"
-                                                pattern="[0-9]*"
-                                                :rules="[rules.amount]"
-                                                v-model="amount"
-                                                @input="calculateAmountCurrency"
-                                            >
-                                            </v-text-field>
-                                            <v-select
-                                                label="Валюта для конвертации"
-                                                :items="currencies"
-                                                item-text="currency"
-                                                return-object
-                                                v-model="currency"
-                                                @change="calculateAmountCurrency"
-                                            >
-                                            </v-select>
-                                            <v-text-field
-                                                label="Сумма в валюте"
-                                                placeholder=0
-                                                type="text"
-                                                readonly
-                                                :value="calculateAmountCurrency()"
-                                            >
-                                            </v-text-field>
-                                            <v-text-field
-                                                name="email"
-                                                label="E-mail"
-                                                type="text"
-                                                v-model="email"
-                                                :rules="[rules.required, rules.email]"
-                                            >
-                                            </v-text-field>
-                                        </v-form>
-                                    </v-card-text>
-                                    <v-card-actions class="justify-center">
-                                        <v-btn color="primary">Записаться на обмен валюты</v-btn>
-                                    </v-card-actions>
-                                </v-card>
-                            </v-col>
-                        </v-row>
-                    </v-container>
-                </v-main>
-            </v-app>
-    </div>
-    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/vuetify/dist/vuetify.js"></script>
-    <script>
-    new Vue({
-        el: '#app',
-        vuetify: new Vuetify(),
-        /* Задаем начальные значения*/
-        data: () => ({
-            amount: null,
-            currency: null,
-            currencies: [
-                {
-                    'currency': 'Доллар США',
-                    'rate': 0.013479911
-                },
-                {
-                    'currency': 'Евро',
-                    'rate': 0.011421705
-                },
-                {
-                    'currency': 'Фунт стерлингов Соединенного королевства',
-                    'rate': 0.009768183
-                },
-                {
-                    'currency': 'Японская иена',
-                    'rate': 1.4849124
-                },
-            ],
-            email: null,
-            /* Описываем правила для валидации полей*/
-            rules: {
-                amount: value => {
-                    const pattern = /^[\d.,]*$/
-                    return pattern.test(value) || 'Введите число'
-                },
-                required: value => !!value || 'Укажите e-mail',
-                email: value => {
-                    const pattern = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-                    return pattern.test(value) || 'Некорректный e-mail'
-                },
-            }
-        }),
-        methods: {
-            /* Описываем функцию для формулу расчета курса*/
-            calculateAmountCurrency() {
-                /* Преобразуем введеную сумму из строки в число*/
-                const amount = parseFloat(this.amount);
-                /* Преобразуем выбранный курс валюты из строки в число, если валюта выбрана*/
-                const rate = this.currency && parseFloat(this.currency.rate);
-                /* Если и сумма, и курс это числа, то выводим произведение, иначе ничего не выводим*/
-                return (amount && rate) ? (amount * rate).toFixed(2) : '';
-            }
-        }
-    })
-    </script>
-    <style>
-        #excalc {
-            background: linear-gradient(#1976d2, #fff);
-        }
-
-        .toolbar__title {
-            color: #1976d2;
-        }
-    </style>
+    <div id="app"></div>
 </body>
 
 </html>

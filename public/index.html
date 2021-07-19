@@ -25,18 +25,20 @@
                                             <v-text-field
                                                 label="Сумма, руб"
                                                 placeholder=0
-                                                type="number"
+                                                type="text"
+                                                inputmode="numeric"
+                                                pattern="[0-9]*"
                                                 v-model="amount"
                                                 @input="calculateAmountCurrency"
                                             >
                                             </v-text-field>
                                             <v-select
                                                 label="Валюта для конвертации"
-                                                v-model="currency"
                                                 :items="currencies"
                                                 item-text="currency"
                                                 return-object
-                                                @input="selectCurrency"
+                                                v-model="currency"
+                                                @change="calculateAmountCurrency"
                                             >
                                             </v-select>
                                             <v-text-field
@@ -93,19 +95,12 @@
                 },
             ]
         }),
-        computed: {
-            selectedCurrency: {
-                get: function() { return this.currencies[0] },
-                set: function() {}
-        },
         methods: {
-            selectCurrency() {
-                console.log(this.selectedCurrency.currency)
-                this.selectedCurrency = this.currency
-            },
-
             calculateAmountCurrency() {
-                return this.amount ? parseFloat(this.amount) * parseFloat(this.selectedCurrency.rate) : null
+                const amount = parseFloat(this.amount);
+                const rate = this.currency && parseFloat(this.currency.rate);
+
+                return (amount && rate) ? (amount * rate).toFixed(2) : '';
             }
         }
     })

@@ -12,7 +12,9 @@
                              <v-card-text>
                                 <v-form
                                     id="form"
-                                    @submit="onSubmit"
+                                    ref="form"
+                                    v-model="valid"
+                                    @submit.prevent="onSubmit"
                                 >
                                     <v-text-field
                                         label="Сумма, руб"
@@ -20,7 +22,7 @@
                                         type="text"
                                         inputmode="numeric"
                                         pattern="[0-9]*"
-                                        :rules="[rules.amount]"
+                                        :rules="[rules.validAmount]"
                                         v-model="form.amount"
                                         @input="calculateAmountCurrency"
                                     >
@@ -32,6 +34,8 @@
                                         return-object
                                         v-model="form.currency"
                                         @change="calculateAmountCurrency"
+                                        required
+                                        :rules="[rules.requiredSelect]"
                                     >
                                     </v-select>
                                     <v-text-field
@@ -47,7 +51,8 @@
                                         label="E-mail"
                                         type="text"
                                         v-model="form.email"
-                                        :rules="[rules.required, rules.email]"
+                                        required
+                                        :rules="[rules.requiredEmail, rules.validEmail]"
                                     >
                                     </v-text-field>
                                 </v-form>
@@ -57,6 +62,7 @@
                                     color="primary"
                                     type="submit"
                                     form="form"
+                                    :disabled="!valid"
                                 >
                                     Записаться на обмен валюты
                                 </v-btn>
@@ -78,6 +84,7 @@ import valuteName from './valuteName.json'
 export default {
     name: 'ExCalc',
     data: () => ({
+        valid: true,
         form: {
             amount: null,
             currency: null,
@@ -85,14 +92,15 @@ export default {
             email: null,
         },
         currencies: [],
-        /* Описываем правила для валидации полей*/
         rules: {
-            amount: value => {
+            /* Описываем правила для валидации полей*/
+            validAmount: value => {
                 const pattern = /^[\d.,]*$/
                 return pattern.test(value) || 'Введите число'
             },
-            required: value => !!value || 'Укажите e-mail',
-            email: value => {
+            requiredSelect: value => !!value || 'Выберите валюту',
+            requiredEmail: value => !!value || 'Укажите e-mail',
+            validEmail: value => {
                 const pattern = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
                 return pattern.test(value) || 'Некорректный e-mail'
             },
@@ -111,24 +119,42 @@ export default {
                     valute.rate =  item.Nominal / item.Value
                     this.currencies.push(valute)
                 }
-            }
-        )
+            })
+            .catch(() => {
+
+            })
+            .finally(() => {
+
+            })
     },
 
     methods: {
         /* Описываем функцию для формулу расчета курса*/
         calculateAmountCurrency() {
+
             /* Преобразуем введеную сумму из строки в число*/
             const amount = parseFloat(this.form.amount);
+
             /* Преобразуем выбранный курс валюты из строки в число, если валюта выбрана*/
             const rate = this.form.currency && parseFloat(this.form.currency.rate);
+
             /* Если и сумма, и курс это числа, то выводим произведение, иначе ничего не выводим*/
             this.form.amountCurrency = (amount && rate) ? (amount * rate).toFixed(2) : ''
             return (amount && rate) ? (amount * rate).toFixed(2) : '';
         },
-        onSubmit(e) {
-            e.preventDefault();
-            axios.post().then        }
+        onSubmit() {
+            /* Отправляем, если поля валидны */
+            this.$refs.form.validate()
+            axios.post('/cs', this.form)
+                 .then(() => {
+                     console.log(this.form)
+                 })
+                 .catch(() => {
+
+                 }).finally(() => {
+
+                 });
+        }
     }
 }
 

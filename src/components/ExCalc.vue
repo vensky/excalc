@@ -60,6 +60,7 @@
                                 >
                                     Записаться на обмен валюты
                                 </v-btn>
+                                <a hidden href="https://www.cbr-xml-daily.ru/">Курсы ЦБ РФ в XML и JSON, API</a>
                             </v-card-actions>
                         </v-card>
                     </v-col>
@@ -70,7 +71,10 @@
 </template>
 
 <script>
+
 import axios from 'axios'
+import valuteName from './valuteName.json'
+
 export default {
     name: 'ExCalc',
     data: () => ({
@@ -80,25 +84,7 @@ export default {
             amountCurrency: null,
             email: null,
         },
-        currencies: [
-            {
-                currency: 'Доллар США',
-                rate: 0.013479911
-            },
-            {
-                currency: 'Евро',
-                rate: 0.011421705
-            },
-            {
-                currency: 'Фунт стерлингов Соединенного королевства',
-                rate: 0.009768183
-            },
-            {
-                currency: 'Японская иена',
-                rate: 1.4849124
-            },
-        ],
-
+        currencies: [],
         /* Описываем правила для валидации полей*/
         rules: {
             amount: value => {
@@ -112,6 +98,23 @@ export default {
             },
         }
     }),
+
+    created() {
+        /* Загружаем данные с курсами валют и добавляем в селект*/
+        axios.get('https://www.cbr-xml-daily.ru/daily_json.js')
+            .then((response) => {
+                const valutes = Object.values(response.data.Valute)
+
+                for (let item of valutes) {
+                    let valute = {}
+                    valute.currency = valuteName[item.CharCode] ? valuteName[item.CharCode] : item.Name;
+                    valute.rate =  item.Nominal / item.Value
+                    this.currencies.push(valute)
+                }
+            }
+        )
+    },
+
     methods: {
         /* Описываем функцию для формулу расчета курса*/
         calculateAmountCurrency() {
@@ -125,20 +128,18 @@ export default {
         },
         onSubmit(e) {
             e.preventDefault();
-            axios
-              .get('https://www.cbr-xml-daily.ru/daily_json.js')
-              .then(response => (console.log(response)));
         }
     }
 }
+
 </script>
 
 <style>
-#excalc {
-    background: linear-gradient(#1976d2, #fff);
-}
+    #excalc {
+        background: linear-gradient(#1976d2, #fff);
+    }
 
-.toolbar__title {
-    color: #1976d2;
-}
+    .toolbar__title {
+        color: #1976d2;
+    }
 </style>

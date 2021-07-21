@@ -1,52 +1,60 @@
 <?php
+// Файлы phpmailer
+require 'phpmailer/PHPMailer.php';
+require 'phpmailer/SMTP.php';
+require 'phpmailer/Exception.php';
 
-$method = $_SERVER['REQUEST_METHOD'];
+// Переменные, которые отправляет пользователь
+$inputJSON = file_get_contents('php://input');
+$input = json_decode($inputJSON, TRUE);
 
-//Script Foreach
-$c = true;
-if ( $method === 'POST' ) {
+$amount = $input['amount'];
+$amountCurrency = $input['amountCurrency'];
+$email = $input['email'];
+$nameCurrency = $input['nameCurrency'];
 
-    $project_name = trim($_POST["project_name"]);
-    $admin_email  = trim($_POST["admin_email"]);
-    $form_subject = trim($_POST["form_subject"]);
+// Формирование самого письма
+$title = "Калькулятор конвертации валюты";
+$body = "
+<h2>Вы записаны на обмен валюты:</h2>
+Сумма: <b>$amount руб.</b><br>
+Сумма в валюте: <b>$amountCurrency $nameCurrency</b><br>
+";
 
-    foreach ( $_POST as $key => $value ) {
-        if ( $value != "" && $key != "project_name" && $key != "admin_email" && $key != "form_subject" ) {
-            $message .= "
-            " . ( ($c = !$c) ? '<tr>':'<tr style="background-color: #f8f8f8;">' ) . "
-                <td style='padding: 10px; border: #e9e9e9 1px solid;'><b>$key</b></td>
-                <td style='padding: 10px; border: #e9e9e9 1px solid;'>$value</td>
-            </tr>
-            ";
-        }
-    }
-} else if ( $method === 'GET' ) {
+// Настройки PHPMailer
+$mail = new PHPMailer\PHPMailer\PHPMailer();
+try {
+    $mail->isSMTP();
+    $mail->CharSet = "UTF-8";
+    $mail->SMTPAuth   = true;
+    $mail->SMTPDebug = 2;
+    $mail->Debugoutput = function($str, $level) {$GLOBALS['status'][] = $str;};
 
-    $project_name = trim($_GET["project_name"]);
-    $admin_email  = trim($_GET["admin_email"]);
-    $form_subject = trim($_GET["form_subject"]);
+    // Настройки вашей почты
+    $mail->Host       = 'smtp.yandex.ru'; // SMTP сервера вашей почты
+    $mail->Username   = ''; // Логин на почте
+    $mail->Password   = ''; // Пароль на почте
+    $mail->SMTPSecure = 'ssl';
+    $mail->Port       = 465;
+    $mail->setFrom('', 'Калькулятор конвертации валюты'); // Адрес самой почты и имя отправителя
 
-    foreach ( $_GET as $key => $value ) {
-        if ( $value != "" && $key != "project_name" && $key != "admin_email" && $key != "form_subject" ) {
-            $message .= "
-            " . ( ($c = !$c) ? '<tr>':'<tr style="background-color: #f8f8f8;">' ) . "
-                <td style='padding: 10px; border: #e9e9e9 1px solid;'><b>$key</b></td>
-                <td style='padding: 10px; border: #e9e9e9 1px solid;'>$value</td>
-            </tr>
-            ";
-        }
-    }
+    // Получатель письма
+    $mail->addAddress($email);
+
+
+// Отправка сообщения
+$mail->isHTML(true);
+$mail->Subject = $title;
+$mail->Body = $body;
+
+// Проверяем отравленность сообщения
+if ($mail->send()) {$result = "success";}
+else {$result = "error";}
+
+} catch (Exception $e) {
+    $result = "error";
+    $status = "Сообщение не было отправлено. Причина ошибки: {$mail->ErrorInfo}";
 }
 
-$message = "<table style='width: 100%;'>$message</table>";
-
-function adopt($text) {
-    return '=?UTF-8?B?'.Base64_encode($text).'?=';
-}
-
-$headers = "MIME-Version: 1.0" . PHP_EOL .
-"Content-Type: text/html; charset=utf-8" . PHP_EOL .
-'From: '.adopt($project_name).' <'.$admin_email.'>' . PHP_EOL .
-'Reply-To: '.$admin_email.'' . PHP_EOL;
-
-mail($admin_email, adopt($form_subject), $message, $headers );
+// Отображение результата
+echo json_encode(["result" => $result, "status" => $status]);

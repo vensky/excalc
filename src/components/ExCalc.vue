@@ -88,6 +88,7 @@ export default {
         form: {
             amount: null,
             currency: null,
+            nameCurrency: null,
             amountCurrency: null,
             email: null,
         },
@@ -115,7 +116,7 @@ export default {
 
                 for (let item of valutes) {
                     let valute = {}
-                    valute.currency = valuteName[item.CharCode] ? valuteName[item.CharCode] : item.Name;
+                    valute.currency = valuteName[item.CharCode] ? valuteName[item.CharCode] : item.Name
                     valute.rate =  item.Nominal / item.Value
                     this.currencies.push(valute)
                 }
@@ -133,27 +134,27 @@ export default {
         calculateAmountCurrency() {
 
             /* Преобразуем введеную сумму из строки в число*/
-            const amount = parseFloat(this.form.amount);
+            const amount = parseFloat(this.form.amount)
 
             /* Преобразуем выбранный курс валюты из строки в число, если валюта выбрана*/
-            const rate = this.form.currency && parseFloat(this.form.currency.rate);
+            const rate = this.form.currency && parseFloat(this.form.currency.rate)
+            this.form.nameCurrency = this.form.currency && this.form.currency.currency;
 
             /* Если и сумма, и курс это числа, то выводим произведение, иначе ничего не выводим*/
             this.form.amountCurrency = (amount && rate) ? (amount * rate).toFixed(2) : ''
-            return (amount && rate) ? (amount * rate).toFixed(2) : '';
+            return (amount && rate) ? (amount * rate).toFixed(2) : ''
         },
         onSubmit() {
             /* Отправляем, если поля валидны */
             this.$refs.form.validate()
-            axios.post('/cs', this.form)
-                 .then(() => {
-                     console.log(this.form)
-                 })
-                 .catch(() => {
-
-                 }).finally(() => {
-
-                 });
+            axios.post('../mail.php', this.form)
+                .then(() => {
+                    this.$refs.form.reset()
+                    alert('Вы записаны')
+                })
+                .catch(() => {
+                    alert('Вы не записаны. Попробуйте позже')
+                })
         }
     }
 }
